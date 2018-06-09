@@ -38,6 +38,7 @@
     NSURL *URL = [NSURL URLWithString:sURL];
 //    SFSafariViewController *safari = [[SFSafariViewController alloc] initWithURL:URL]; // 1.
     SFSafariViewController *safari = [[SFSafariViewController alloc] initWithURL:URL entersReaderIfAvailable:YES]; // 2.
+//  safari.preferredBarTintColor = [UIColor blueColor]; // optional
     safari.delegate = self;
     [self presentViewController:safari animated:YES completion:nil];
 }
@@ -53,6 +54,11 @@
     // Load finished
     
     NSLog(@"Load finished");
+    
+    if (didLoadSuccessfully) {
+        NSLog(@"SafariViewController: Loading of URl finished");
+    }
+
     
 }
 
