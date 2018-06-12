@@ -25,12 +25,7 @@ SFAuthenticationSession *_authenticationVC;
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-
-    [center addObserver:self
-            selector:@selector(receiveTestNotification:)
-            name:@"TestNotification"
-            object:self];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(safariCallback:) name:@"SafariCallback" object:nil];
 
     
     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -39,14 +34,26 @@ SFAuthenticationSession *_authenticationVC;
     button.center = CGPointMake(320/2, 60);
     
     // Add an action in current code file (i.e. target)
-    [button addTarget:self action:@selector(buttonPressed2:)
+    [button addTarget:self action:@selector(type1:)
      forControlEvents:UIControlEventTouchUpInside];
     
     [self.view addSubview:button];
 
 }
 
-- (void)buttonPressed2:(UIButton *)button {
+// Case 1: open in view
+- (void)type1:(UIButton *)button {
+    
+    NSString *sURL = @"https://www.arcgis.com/sharing/rest/oauth2/authorize/?hidecancel=true&client_id=arcgiscompanion&grant_type=code&response_type=code&expiration=-1&redirect_uri=urn:ietf:wg:oauth:2.0:oob&locale=en";
+    NSURL *URL = [NSURL URLWithString:sURL];
+    
+    SFSafariViewController *safari = [[SFSafariViewController alloc] initWithURL:URL];
+    safari.delegate = self;
+    [self presentViewController:safari animated:YES completion:nil];
+}
+
+// Case 2: oauth login
+- (void)type2:(UIButton *)button {
     NSURL *destinationUrl = [NSURL URLWithString:@"https://www.arcgis.com/sharing/rest/oauth2/authorize/?hidecancel=true&client_id=arcgiscompanion&grant_type=code&response_type=code&expiration=-1&redirect_uri=urn:ietf:wg:oauth:2.0:oob&locale=en"];
     
     NSString *redirectScheme = @"safariviewcontrollertest://";
@@ -82,6 +89,7 @@ SFAuthenticationSession *_authenticationVC;
             }
             else
             {
+                NSLog(@"No callbackurl");
                 NSLog(@"%@",[error localizedDescription]);
             }
         }];
@@ -107,15 +115,6 @@ SFAuthenticationSession *_authenticationVC;
     }
 }
 
-- (void)buttonPressed:(UIButton *)button {
-
-    NSString *sURL = @"https://www.arcgis.com/sharing/rest/oauth2/authorize/?hidecancel=true&client_id=arcgiscompanion&grant_type=code&response_type=code&expiration=-1&redirect_uri=urn:ietf:wg:oauth:2.0:oob&locale=en";
-    NSURL *URL = [NSURL URLWithString:sURL];
-    
-    SFSafariViewController *safari = [[SFSafariViewController alloc] initWithURL:URL];
-    safari.delegate = self;
-    [self presentViewController:safari animated:YES completion:nil];
-}
 
 
 - (void)didReceiveMemoryWarning {
@@ -143,15 +142,20 @@ SFAuthenticationSession *_authenticationVC;
     
 }
 
-- (void) receiveTestNotification:(NSNotification *) notification
-{
-    // [notification name] should always be @"TestNotification"
-    // unless you use this method for observation of other notifications
-    // as well.
+- (void)safariCallback:(NSNotification *)notification {
+    // Dismiss View
+    [self dismissViewControllerAnimated:NO completion:nil];
     
-    if ([[notification name] isEqualToString:@"TestNotification"])
-        NSLog (@"Successfully received the test notification!");
+    // Extract information from notification
+    NSDictionary *dict = [notification userInfo];
+    NSString *value = [dict objectForKey:@"key"];
+    NSLog(@"Value is %@", value);
+    
+    // Show result as alert dialog
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Key content" message:value preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okButton = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {}];
+    [alert addAction:okButton];
+    [self presentViewController:alert animated:YES completion:nil];
 }
-
 
 @end

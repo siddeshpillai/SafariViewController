@@ -48,29 +48,26 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
-- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options {
-    // just making sure we send the notification when the URL is opened in SFSafariViewController
-
-    NSLog(@"openURL");
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
+    NSLog(@"application openURL options is called");
     
-    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-    [center postNotificationName: @"TestNotification"
-                          object: self];
+    NSString *sourceApplication = [options objectForKey:@"UIApplicationOpenURLOptionsSourceApplicationKey"];
+    NSString *urlScheme = [url scheme];
+    NSString *urlQuery = [url query];
     
-//    [[NSNotificationCenter defaultCenter] postNotificationName:@"TestNotification" object:self];
-
-    NSString *appName = [options objectForKey:UIApplicationOpenURLOptionsSourceApplicationKey];
-
-    NSLog( @"%@", appName);
+    NSLog(@"valueaaa %@",urlQuery);
     
-    if ([appName isEqualToString:@"com.apple.SafariViewService"])
-    {
-        dispatch_async(dispatch_get_main_queue(),^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"TestNotification" object:self];
-        });
-        return true;
+    // Check URL scheme and caller
+    if ([urlScheme isEqualToString:@"safariviewcontrollertest"] &&
+        [sourceApplication isEqualToString:@"com.apple.SafariViewService"]) {
+        // Pass it via notification
+        NSLog(@"Value: %@", urlQuery);
+        NSDictionary *data = [NSDictionary dictionaryWithObject:urlQuery forKey:@"key"];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"SafariCallback" object:self userInfo:data];
+        
+        return YES;
     }
-    return false;
+    return NO;
 }
 
 @end
