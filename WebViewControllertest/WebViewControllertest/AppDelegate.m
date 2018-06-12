@@ -17,6 +17,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
     return YES;
 }
 
@@ -47,5 +48,29 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options {
+    // just making sure we send the notification when the URL is opened in SFSafariViewController
+
+    NSLog(@"openURL");
+    
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center postNotificationName: @"TestNotification"
+                          object: self];
+    
+//    [[NSNotificationCenter defaultCenter] postNotificationName:@"TestNotification" object:self];
+
+    NSString *appName = [options objectForKey:UIApplicationOpenURLOptionsSourceApplicationKey];
+
+    NSLog( @"%@", appName);
+    
+    if ([appName isEqualToString:@"com.apple.SafariViewService"])
+    {
+        dispatch_async(dispatch_get_main_queue(),^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"TestNotification" object:self];
+        });
+        return true;
+    }
+    return false;
+}
 
 @end
