@@ -29,93 +29,37 @@ SFAuthenticationSession *_authenticationVC;
 
     
     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
-    [button setTitle:@"Press Me" forState:UIControlStateNormal];
+    [button setTitle:@"Case 1" forState:UIControlStateNormal];
     [button sizeToFit];
     button.center = CGPointMake(320/2, 60);
     
     // Add an action in current code file (i.e. target)
     [button addTarget:self action:@selector(type1:)
      forControlEvents:UIControlEventTouchUpInside];
-    
     [self.view addSubview:button];
-
 }
 
 // Case 1: open in view
 - (void)type1:(UIButton *)button {
     
-    NSString *sURL = @"https://www.arcgis.com/sharing/rest/oauth2/authorize/?hidecancel=true&client_id=arcgiscompanion&grant_type=code&response_type=code&expiration=-1&redirect_uri=urn:ietf:wg:oauth:2.0:oob&locale=en";
+    NSString *sURL = @"https://www.arcgis.com/sharing/rest/oauth2/authorize/?hidecancel=true&client_id=ud2XLznQs9P57ugn&grant_type=code&response_type=code&expiration=-1&redirect_uri=safariviewcontrollertest://&locale=en";
+    
     NSURL *URL = [NSURL URLWithString:sURL];
     
-    SFSafariViewController *safari = [[SFSafariViewController alloc] initWithURL:URL];
-    safari.delegate = self;
-    [self presentViewController:safari animated:YES completion:nil];
-}
-
-// Case 2: oauth login
-- (void)type2:(UIButton *)button {
-    NSURL *destinationUrl = [NSURL URLWithString:@"https://www.arcgis.com/sharing/rest/oauth2/authorize/?hidecancel=true&client_id=arcgiscompanion&grant_type=code&response_type=code&expiration=-1&redirect_uri=urn:ietf:wg:oauth:2.0:oob&locale=en"];
+    //SFSafariViewController *safari = [[SFSafariViewController alloc] initWithURL:URL];
+    sfSafariViewController = [[SFSafariViewController alloc] initWithURL:URL];
+    sfSafariViewController.configuration.barCollapsingEnabled = false;
+    sfSafariViewController.delegate = self;
+//    sfSafariViewController.transitioningDelegate = self;
+//    safari.delegate = self;
+//    sfSafariViewController.dismissButtonStyle = SFSafariViewControllerDismissButtonStyleCancel;
+//    sfSafariViewController.preferredBarTintColor = UIColor.blackColor;
+//    sfSafariViewController.preferredControlTintColor = UIColor.grayColor;
     
-    NSString *redirectScheme = @"safariviewcontrollertest://";
+//    sfSafariViewController = safari;
     
-    if (@available(iOS 11.0, *)) {
-        
-        SFAuthenticationSession* authenticationVC = [[SFAuthenticationSession alloc]
-                                                     initWithURL: destinationUrl
-                                                     callbackURLScheme: redirectScheme
-                                                     completionHandler: ^(NSURL * _Nullable callbackURL,
-                                                     NSError * _Nullable error)
-        {
-            _authenticationVC = nil;
-            
-            if (callbackURL)
-            {
-                NSString *oauthToken = callbackURL.absoluteString;
-                NSLog(@"%@",oauthToken);
-                
-                NSURLComponents *components = [NSURLComponents componentsWithString:[oauthToken stringByReplacingOccurrencesOfString:@"#" withString:@"&"]];
-                
-                for (NSURLQueryItem *item in components.queryItems)
-                {
-                    if ([item.name isEqualToString:@"access_token"])
-                    {
-                        NSLog(@"%@", item.value);
-                        
-                    }
-                }
-                
-                NSLog(@"%@", components.queryItems);
-
-            }
-            else
-            {
-                NSLog(@"No callbackurl");
-                NSLog(@"%@",[error localizedDescription]);
-            }
-        }];
-        
-        _authenticationVC = authenticationVC;
-
-        BOOL started = [_authenticationVC start];
-        
-        if (started)
-        {
-            NSLog(@"SFAuthenticationSession: Loading of URL finished");
-        }
-        else
-        {
-            NSLog(@"Unable to open in safari");
-        }
-    }
-    else
-    {
-        // Our app is only iOS 9+, so we can assume SFSafariViewController is present here.
-        SFSafariViewController *vc = [[SFSafariViewController alloc] initWithURL:destinationUrl];
-        [self presentViewController:vc animated:YES completion:nil];
-    }
+    [self presentViewController:sfSafariViewController animated:YES completion:nil];
 }
-
-
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -130,22 +74,18 @@ SFAuthenticationSession *_authenticationVC;
     
     if (didLoadSuccessfully) {
         NSLog(@"SafariViewController: Loading of URL finished");
-    }
-    
+    }    
 }
 
 -(void)safariViewControllerDidFinish:(SFSafariViewController *)controller {
-    // Done button pressed
-    
+    // Done button pressed    
     NSLog(@"Done button pressed");
-    
-    
 }
 
 - (void)safariCallback:(NSNotification *)notification {
     // Dismiss View
     [self dismissViewControllerAnimated:NO completion:nil];
-    
+
     // Extract information from notification
     NSDictionary *dict = [notification userInfo];
     NSString *value = [dict objectForKey:@"key"];

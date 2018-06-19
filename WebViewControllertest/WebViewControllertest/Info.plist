@@ -50,6 +50,10 @@
             <array>
                 <string>safariviewcontrollertest</string>
             </array>
+            <key>LSApplicationQueriesSchemes</key>
+            <array>
+                <string>safariviewcontrollertest</string>
+            </array>
         </dict>
     </array>
 </dict>
